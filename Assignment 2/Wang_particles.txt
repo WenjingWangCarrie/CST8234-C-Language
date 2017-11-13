@@ -1,0 +1,20 @@
+## My particle system is a small explosion.
+There is an initial burst in the center as all the particles move outwards at different speeds and fade away slowly.
+## For the particles attributes:
++ The colour of the particle is set to red
++ All particles start at position 0,0, 0 and move towards y direction, speed is set to 5 units and life span is 256, size is 10
+## On each update
++ The particle position is moved according to each direction 
++ Lifespan is decreased by 5 and if it equals 0, the particle is removed from the linked list
+
+Time: 
+if execute ./pss 20000000 - it will display something like below:
+20000000 particles have been created.
+Total time taken by creation in milliseconds: 970
+Total time taken by animation in milliseconds: 340
+Total time taken by destroy in milliseconds: 300
+If you run ./pss 500 - it will display something like below (500 is too small, so the time taken is 0):
+500 particles have been created.
+Total time taken by creation in milliseconds: 0
+Total time taken by animation in milliseconds: 0
+Total time taken by destroy in milliseconds: 0
