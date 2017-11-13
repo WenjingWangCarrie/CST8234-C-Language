@@ -13,9 +13,10 @@
 /**************************************************************************/
 /* Declare main 
 **************************************************************************/
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
+
     int opt;
-    int key1, key2, key3, key4 = 0;
+    int key = 0;
     char *s_file = NULL;
     char *d_file = NULL;
 
@@ -23,19 +24,20 @@ int main (int argc, char **argv) {
     int encrypt = 0;
     int help = 0;
 
-    while ((opt = getopt(argc, argv, "h:m:")) != -1) {
+    while ((opt = getopt(argc, argv, "hd:e:")) != -1) {
     	switch(opt) {
     		case 'h':
     		    help = 1;
     		    break;
 
-    		case 'm':
+    		case 'd':
     		    decrypt = 1;
+    		    key = atoi(optarg);
+    		    break;
+
+    		case 'e':
     		    encrypt = 1;
-    		    key1 = atoi(optarg);
-    		    key2 = atoi(optarg);
-    		    key3 = atoi(optarg);
-    		    key4 = atoi(optarg);
+    		    key = atoi(optarg);
     		    break;
     	}
     }
@@ -44,7 +46,7 @@ int main (int argc, char **argv) {
     pro = argv[0];
 
     /* check if key is integer */
-    if (key1 == 0 || key2 == 0 || key3 == 0 || key4 == 0) {
+    if (key == 0) {
     	printf("Key must be integer\n");
     	usage();
     	return EXIT_FAILURE;
@@ -76,7 +78,11 @@ int main (int argc, char **argv) {
     	return EXIT_SUCCESS;
     } else if (decrypt == 1) {
     	printf("decrypting... %s\n", s_file);
-    	hill(key1, key2, key3, key4, s_file, d_file, 'm');
+    	crypt(0-key, s_file, d_file);
+    	return EXIT_SUCCESS;
+    } else if (encrypt == 1) {
+    	printf("encrypting... %s\n", s_file);
+    	crypt(key, s_file, d_file);
     	return EXIT_SUCCESS;
     }
 
@@ -89,7 +95,7 @@ int main (int argc, char **argv) {
 int usage() {
     printf("usage: %s [OPTION] [SOURCE] [DESTINATION]\n\n", pro);
     printf("options:\n");
-    printf("-d KEY   %s\n", "decrypt the file SOURCE using KEY and writes back into DESTINATION");
+    printf("-d KEY    %s\n", "decrypt the file SOURCE using KEY and writes back into DESTINATION");
     printf("-e KEY    %s\n", "encrypt the file SOURCE using KEY and writes back into DESTINATION");
     printf("-h        %s\n", "help in using the command");
     
@@ -97,81 +103,45 @@ int usage() {
 }
 
 /**************************************************************************
- * hill:
+ * crypt:
  * Encrypt/Decrypt a source file to a destination file using a KEY
  * SRC is the source file to encrypt or decrypt
  * DST is the file to write to
  * KEY is the decimal integer to use for decryption/encryption
  *
 **************************************************************************/
-int hill(int KEY1, int KEY2, int KEY3, int KEY4, char *SRC, char *DES, char de) {
-    FILE *sfile;
-    FILE *dfile;
-    int nextChar;
-    int ans[25][1], mtrx[25][25];
-    char txt[25];
-    int size;
-    int i, j;
-    int sum, end;
+int crypt(int KEY, char *SRC, char *DES) {
+	FILE *sfile;
+	FILE *dfile;
+	int nextChar;
+	int newChar;
 
-    sfile = fopen(SRC, "r");
-    dfile = fopen(DES,"w");
+	sfile = fopen(SRC, "r");
+	dfile = fopen(DES,"w");
 
-    if (sfile == NULL) {
-	fprintf(stderr, "%s: [%s] could not be opened\n", pro, SRC);
-	return EXIT_FAILURE;
-    } else if (dfile == NULL) {
-	fprintf(stderr, "%s: [%s] could not be opened\n", pro, DES);
-	return EXIT_FAILURE;
-    } 
+	if (sfile == NULL) {
+		fprintf(stderr, "%s: [%s] could not be opened\n", pro, SRC);
+		return EXIT_FAILURE;
+	} else if (dfile == NULL) {
+		fprintf(stderr, "%s: [%s] could not be opened\n", pro, DES);
+		return EXIT_FAILURE;
+	} 
 
-    /* After open file, get file size, and move back to bbeginning */
-    fseek(sfile, 0, SEEK_END);
-    size = ftell(sfile);
-    rewind(sfile);
+	while ((nextChar = fgetc(sfile)) != EOF) {
+		while (newChar < 0) {
+			newChar += 256;
+		}
 
-    printf("\nEnter the string : ");
-    scanf("%s",txt);
+		while (newChar > 255) {
+			newChar -= 256;
+		}
 
-    for (i = 0; i < 25; i++) {
-        if (txt[i] >= 97 && txt[i] < 122) {
+		fputc(newChar, dfile);
+	}
 
-        } else {
-            end = i;
-            break;
-        }
-    }
-
-    for (i = 0; i < end; i++) {
-        txt[i] = txt[i] - 'a';
-    }
-
-    printf("Enter matrix...");
-    for (i = 0; i < end; i++) {
-        for (j = 0; j < end; j++) {
-            scanf("%d",&mtrx[i][j]);
-        }
-    }
-
-    for (i = 0; i < end; i++) {
-        sum = 0;
-        for (j = 0; j < end; j++) {
-            sum += mtrx[i][j]*(int)txt[j];
-        }
-
-        ans[i][0] = sum;
-    }
-
-    for (i = 0 ; i < end; i++) {
-        printf("%c", ((ans[i][0])%26) + 97);
-    }
-	
 	fclose(sfile);
 	fclose(dfile);
 
 	return EXIT_SUCCESS;
+
 }
-
-
-
-
