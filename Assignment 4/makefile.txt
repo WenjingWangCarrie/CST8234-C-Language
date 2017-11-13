@@ -1,0 +1,36 @@
+# Makefile for: CST8234 Assignment 4
+# Author: 	Tryton Van Meer
+
+CC=gcc
+CFLAGS=-g -c -pedantic -Wall
+LDFLAGS=-lncurses -lpthread
+
+SOURCE_CLIENT=src/client.c
+SOURCE_SERVER=src/server.c
+SOURCE_COMMON=src/common.c
+
+OBJECT_CLIENT=$(SOURCE_CLIENT:.c=.o)
+OBJECT_SERVER=$(SOURCE_SERVER:.c=.o)
+OBJECT_COMMON=$(SOURCE_COMMON:.c=.o)
+
+EXECUTABLE_CLIENT=build/kobold_client
+EXECUTABLE_SERVER=build/kobold_server
+
+all: $(EXECUTABLE_CLIENT) $(EXECUTABLE_SERVER)
+
+$(EXECUTABLE_CLIENT):$(OBJECT_CLIENT) $(OBJECT_COMMON)
+	if [ ! -d "./build" ]; then mkdir build; fi
+	$(CC) $(OBJECT_CLIENT) $(OBJECT_COMMON) -o $@ $(LDFLAGS)
+
+$(EXECUTABLE_SERVER):$(OBJECT_SERVER) $(OBJECT_COMMON)
+	if [ ! -d "./build" ]; then mkdir build; fi
+	$(CC) $(OBJECT_SERVER) $(OBJECT_COMMON) -o $@ $(LDFLAGS)
+
+.c:.o
+	$(CC) $(CFLAGS) $< -o $@
+
+clean:
+	rm -f $(EXECUTABLE_CLIENT) $(EXECUTABLE_SERVER) *.h.gch src/*.o
+	rmdir build
+
+.PHONY: clean
